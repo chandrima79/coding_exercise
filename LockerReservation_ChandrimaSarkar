@@ -1,0 +1,147 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace ClassLibrary2
+{
+    public enum Size
+    {
+        small = 1,
+        medium = 2,
+        large = 3
+    }
+
+    public class LockerTicketInfo
+    {
+    public int lockerNumber{get; set;}
+    public Size lockerSize{get; set;}
+    public string lockermessage { get; set; }
+
+}
+    public class LockerReservation
+    {
+        //Global Small medium and Lage sixe locker declared
+        List<int> listSmallLocker = new List<int>();
+        List<int> listMediumLocker = new List<int>();
+        List<int> listLargeLocker = new List<int>();
+
+        //Loads 100 count of lockers in each of the three locker lists
+        public void LoadLockerTestData() { 
+        
+            for(int i=1; i<=100; i++){
+                listSmallLocker.Add(i);
+                listMediumLocker.Add(i);
+                listLargeLocker.Add(i);
+            }
+        }
+
+        // Method Called to make reservation
+        public LockerTicketInfo MakeLockerReservation(Size luggageSize)
+        {
+            var lockerNumber = 0;
+            string lockerMessage = string.Empty;
+            LockerTicketInfo ticketInfo = new LockerTicketInfo();
+            Size lockerSize = new Size();
+            switch (luggageSize) { 
+                case Size.large:
+                    //get large Locker
+                    lockerSize = Size.large;
+                    lockerNumber = FindLocker(listLargeLocker);
+                    
+                    break;
+                case Size.medium:
+                    //get meduim Locker
+                    lockerSize = Size.medium;
+                    lockerNumber = FindLocker(listMediumLocker);
+                    //if medium locker full then get large Locker
+                    if (lockerNumber == 0) {
+                        lockerSize = Size.large;
+                        lockerNumber = FindLocker(listLargeLocker);
+                    }
+                    break;
+                case Size.small:
+                    //get small Locker
+                    lockerSize = Size.small;
+                    lockerNumber = FindLocker(listSmallLocker);
+
+                    //if small locker full then get medium Locker
+                    if (lockerNumber == 0) {
+                        lockerSize = Size.medium;
+                        lockerNumber = FindLocker(listMediumLocker);
+
+                        //if medium locker full then get large Locker
+                        if (lockerNumber == 0)
+                        {
+                            lockerSize = Size.large;
+                            lockerNumber = FindLocker(listLargeLocker);
+                        }                    
+                    }
+                    
+                    break;
+                default:
+                    break;
+            }
+
+
+            ticketInfo.lockerSize = lockerSize;
+            ticketInfo.lockerNumber = lockerNumber;
+            ticketInfo.lockermessage = lockerNumber == 0 ? "Locker is not available" : String.Format("You have been assigned {0} size locker number {1}", lockerSize, lockerNumber);
+            
+            return ticketInfo;
+        }
+
+        //  Find a free locker
+        private int FindLocker(List<int> locker) {
+            int assignedLockerNumber = 0;
+            locker.Sort();
+            if (locker.Count > 0)
+            {
+                assignedLockerNumber = locker[0];
+                locker.Remove(assignedLockerNumber);
+            }
+
+            return assignedLockerNumber;
+        }
+
+        // Method called when customer returns the locker
+        public string ReturnLocker(Size luggageSize, int lockerNumber) {
+            string message = string.Empty;
+            switch (luggageSize)
+            {
+                case Size.large:
+                    message = ResetLocker(listLargeLocker, lockerNumber);
+                    break;
+                case Size.medium:
+                    message = ResetLocker(listMediumLocker, lockerNumber);
+                    break;
+                case Size.small:
+                    message = ResetLocker(listSmallLocker, lockerNumber);
+                    break;
+                default:
+                    break;
+            }
+
+            return message;
+        }
+
+        //release the returned locker to available locker list
+        private string ResetLocker(List<int> locker, int lockerNumber)
+        {
+            string message = string.Empty;
+            if (locker.Contains(lockerNumber))
+            {
+                message = "Incorrect locker number or locker size entered";
+            }
+            else {
+                locker.Add(lockerNumber);
+                message = "The locker has been released  successfully";
+            }
+            
+            return message;
+        }
+
+
+    }
+}
